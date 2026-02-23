@@ -426,42 +426,68 @@ delete_resource_groups() {
     fi
     
     echo ""
-    log_info "Starting parallel deletion of ${#rgs[@]} resource groups..."
-    
-    # Delete in parallel using background jobs
-    local pids=()
-    local rg_pid_map=()
-    
-    for rg in "${rgs[@]}"; do
-        (
-            az group delete --name "$rg" --yes --no-wait 2>/dev/null
-        ) &
-        pids+=($!)
-        rg_pid_map+=("$rg:$!")
-    done
-    
-    # Monitor deletion progress
-    log_info "Deletion initiated for all resource groups (running async)..."
+    log_info "Deleting ${#rgs[@]} resource groups (with retry for locked resources)..."
     
     local completed=0
     local failed=0
+    local failed_rgs=()
     
-    for mapping in "${rg_pid_map[@]}"; do
-        local rg_name="${mapping%%:*}"
-        local pid="${mapping##*:}"
+    # First pass: initiate deletions with slight stagger to avoid lock contention
+    for rg in "${rgs[@]}"; do
+        echo -ne "  Deleting: $rg... "
         
-        if wait "$pid" 2>/dev/null; then
-            log_success "Initiated deletion: $rg_name"
-            ((completed++))
-        else
-            log_error "Failed to initiate deletion: $rg_name"
+        local retry_count=0
+        local max_retries=3
+        local success=false
+        
+        while [[ $retry_count -lt $max_retries ]]; do
+            if az group delete --name "$rg" --yes --no-wait 2>/dev/null; then
+                echo -e "${GREEN}initiated${NC}"
+                ((completed++))
+                success=true
+                break
+            else
+                ((retry_count++))
+                if [[ $retry_count -lt $max_retries ]]; then
+                    echo -ne "${YELLOW}retry ${retry_count}${NC}... "
+                    sleep $((retry_count * 2))  # Exponential backoff: 2s, 4s, 6s
+                fi
+            fi
+        done
+        
+        if ! $success; then
+            echo -e "${RED}failed${NC}"
+            failed_rgs+=("$rg")
             ((failed++))
         fi
+        
+        # Small delay between deletions to reduce 429 errors
+        sleep 0.5
     done
     
     echo ""
+    
+    # Retry failed deletions after a longer wait
+    if [[ ${#failed_rgs[@]} -gt 0 ]]; then
+        log_warn "${#failed_rgs[@]} resource group(s) failed. Retrying in 10 seconds..."
+        sleep 10
+        
+        for rg in "${failed_rgs[@]}"; do
+            echo -ne "  Retrying: $rg... "
+            if az group delete --name "$rg" --yes --no-wait 2>/dev/null; then
+                echo -e "${GREEN}initiated${NC}"
+                ((completed++))
+                ((failed--))
+            else
+                echo -e "${RED}failed (may need manual deletion)${NC}"
+            fi
+            sleep 1
+        done
+        echo ""
+    fi
+    
     log_success "Deletion initiated for $completed resource group(s)"
-    [[ $failed -gt 0 ]] && log_error "Failed to initiate $failed resource group(s)"
+    [[ $failed -gt 0 ]] && log_error "Failed to initiate $failed resource group(s) - retry later or delete manually"
     
     echo ""
     log_info "Resource groups are being deleted asynchronously."
