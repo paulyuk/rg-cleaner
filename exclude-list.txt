@@ -1,0 +1,21 @@
+# RG Cleaner Exclude List
+# One pattern per line (case-insensitive regex)
+# Lines starting with # are comments
+
+# Azure system/default resource groups
+^DefaultResourceGroup
+^NetworkWatcherRG$
+^cloud-shell-storage
+^LogAnalyticsDefaultResources$
+^dashboards$
+^cleanupservice$
+^Shared-
+^ascexport$
+
+# Application Insights defaults
+^Default-ApplicationInsights
+
+# Add your personal/permanent RGs below
+# Example:
+# ^my-production-rg$
+# ^company-shared-

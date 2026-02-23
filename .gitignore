@@ -1,0 +1,17 @@
+# Personal/local files
+.exclude-list.personal.txt
+*.personal.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Logs
+*.log
