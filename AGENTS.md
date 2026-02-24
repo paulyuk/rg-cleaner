@@ -4,9 +4,13 @@ This document provides instructions for AI agents using the rg-cleaner MCP tools
 
 ## Getting Started
 
-### 1. Start the MCP Server
+### 1. Start Azurite and the MCP Server
 
 ```bash
+# Terminal 1: Start Azurite (storage emulator)
+azurite --silent --location /tmp/azurite --debug /tmp/azurite/debug.log
+
+# Terminal 2: Start the function
 cd mcp-function
 npm install
 func start
@@ -22,6 +26,7 @@ See `.github/mcp/mcp.json` for the MCP configuration.
 
 - Azure CLI installed and authenticated (`az login`)
 - Azure Functions Core Tools (`npm i -g azure-functions-core-tools@4`)
+- Azurite storage emulator (`npm i -g azurite`)
 - User must have permissions to list/delete resource groups
 
 ## Available Tools

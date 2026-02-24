@@ -197,7 +197,12 @@ Works with any MCP-compatible agent:
    npm run build
    ```
 
-2. **Start the server:**
+2. **Start Azurite (storage emulator):**
+   ```bash
+   azurite --silent --location /tmp/azurite
+   ```
+
+3. **Start the function (in another terminal):**
    ```bash
    func start
    # MCP endpoint: http://localhost:7071/runtime/webhooks/mcp
