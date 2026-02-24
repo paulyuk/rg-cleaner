@@ -4,27 +4,24 @@ This document provides instructions for AI agents using the rg-cleaner MCP tools
 
 ## Getting Started
 
-### Connect to the MCP Server
+### 1. Start the MCP Server
 
-**Local development:**
 ```bash
 cd mcp-function
 npm install
-npm start
+func start
 ```
 
-**Azure deployment:**
-```bash
-cd mcp-function
-azd up
-# Use the MCP endpoint from deployment output
-```
+### 2. Connect via MCP
 
-**MCP Configuration:** See `.github/mcp/mcp.json`
+The server runs at `http://localhost:7071/runtime/webhooks/mcp/sse`
+
+See `.github/mcp/mcp.json` for the MCP configuration.
 
 ### Prerequisites
 
 - Azure CLI installed and authenticated (`az login`)
+- Azure Functions Core Tools (`npm i -g azure-functions-core-tools@4`)
 - User must have permissions to list/delete resource groups
 
 ## Available Tools

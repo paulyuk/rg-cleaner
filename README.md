@@ -197,19 +197,21 @@ Works with any MCP-compatible agent:
    npm run build
    ```
 
-2. **Run locally:**
+2. **Start the server:**
    ```bash
-   npm start
+   func start
+   # MCP endpoint: http://localhost:7071/runtime/webhooks/mcp/sse
    ```
 
-3. **Deploy to Azure:**
-   ```bash
-   azd up
-   ```
+3. **Connect your agent** using `.github/mcp/mcp.json`
 
-### MCP Configuration
+### Deploy to Azure
 
-See `.github/mcp/mcp.json` for agent configuration. After deployment, set `RG_CLEANER_FUNCTION_URL` to your Azure Function endpoint.
+```bash
+cd mcp-function
+azd up
+# Update .github/mcp/mcp.json URL with your deployed function endpoint
+```
 
 ### MCP Tools
 

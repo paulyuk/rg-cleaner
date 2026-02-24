@@ -4,19 +4,19 @@
   "description": "Azure Resource Group Cleaner - List, analyze, and delete Azure resource groups with smart demo detection",
   "version": "1.0.0",
   "servers": {
-    "rg-cleaner-local": {
-      "type": "stdio",
-      "command": "npm",
-      "args": ["start"],
-      "cwd": "mcp-function",
-      "description": "Local development server (run npm start in mcp-function/)"
-    },
-    "rg-cleaner-azure": {
-      "type": "sse",
-      "url": "${RG_CLEANER_FUNCTION_URL}/runtime/webhooks/mcp/sse",
-      "description": "Azure Functions MCP endpoint (set RG_CLEANER_FUNCTION_URL after azd up)"
+    "rg-cleaner": {
+      "type": "http",
+      "url": "http://localhost:7071/runtime/webhooks/mcp/sse"
     }
   },
+  "inputs": [
+    {
+      "id": "func-start-notice",
+      "type": "notice",
+      "title": "Start the function first",
+      "message": "Run 'cd mcp-function && func start' before connecting"
+    }
+  ],
   "tools": [
     {
       "name": "list_resource_groups",
