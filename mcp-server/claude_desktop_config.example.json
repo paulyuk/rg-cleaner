@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "rg-cleaner": {
-      "command": "node",
-      "args": ["/path/to/rg-cleaner/mcp-server/index.js"],
-      "env": {}
-    }
-  }
-}

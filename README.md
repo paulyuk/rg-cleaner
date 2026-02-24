@@ -1,6 +1,14 @@
 # Azure Resource Group Cleaner
 
-A fast, interactive CLI tool for batch deletion of Azure resource groups with smart demo detection and safety features.
+A fast, smart tool for batch deletion of Azure resource groups with demo detection and safety features.
+
+## Three Ways to Use
+
+| Mode | Best For | How |
+|------|----------|-----|
+| **CLI Tool** | Quick interactive cleanup | `./rg-cleaner.sh` |
+| **MCP Server** | AI agents (Claude, Copilot, etc.) | Connect via `.github/mcp/mcp.json` |
+| **Local Agent** | Natural language commands | Load `CLAUDE.md` + MCP tools |
 
 ## Features
 
@@ -171,26 +179,58 @@ cat exclude-list.txt
 
 ## MCP Server (for AI Agents)
 
-This tool also includes an MCP server for use with AI agents like Claude Desktop.
+Connect your favorite AI agent to the rg-cleaner MCP server for natural language resource group management.
 
-```bash
-cd mcp-server
-npm install
-```
+### Supported Agents
 
-Add to Claude Desktop config:
-```json
-{
-  "mcpServers": {
-    "rg-cleaner": {
-      "command": "node",
-      "args": ["/path/to/rg-cleaner/mcp-server/index.js"]
-    }
-  }
-}
-```
+Works with any MCP-compatible agent:
+- **GitHub Copilot** (VS Code, CLI)
+- **Claude Desktop**
+- **Custom agents**
 
-See [mcp-server/README.md](./mcp-server/README.md) for full documentation.
+### Setup
+
+1. **Install dependencies:**
+   ```bash
+   cd mcp-server && npm install
+   ```
+
+2. **Configure your agent** using `.github/mcp/mcp.json`:
+   
+   **Stdio mode** (local development):
+   ```json
+   {
+     "command": "node",
+     "args": ["/path/to/rg-cleaner/mcp-server/index.js"]
+   }
+   ```
+   
+   **HTTP mode** (Azure Function):
+   ```bash
+   cd mcp-server && func start
+   # Server runs at http://localhost:7071/api/mcp
+   ```
+
+### MCP Tools
+
+| Tool | Description |
+|------|-------------|
+| `list_resource_groups` | List RGs with demo/exclusion flags |
+| `delete_resource_groups` | Delete with audit mode support |
+| `get_exclude_patterns` | View protected patterns |
+| `detect_demo_rgs` | Find cleanup candidates |
+
+### Example Agent Conversation
+
+> **You:** "Clean up my demo resource groups"
+> 
+> **Agent:** Found 5 demo RGs: rg-ignite-demo, rg-build-test... Delete them?
+> 
+> **You:** "Yes, but keep rg-build-test"
+> 
+> **Agent:** Deleted 4 resource groups. rg-build-test preserved.
+
+See [CLAUDE.md](./CLAUDE.md) and [AGENTS.md](./AGENTS.md) for agent-specific instructions.
 
 ## License
 

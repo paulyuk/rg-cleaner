@@ -1,39 +1,53 @@
 # RG Cleaner MCP Server
 
-An MCP (Model Context Protocol) server that exposes the Azure Resource Group Cleaner as tools for AI agents.
+MCP (Model Context Protocol) server exposing Azure Resource Group Cleaner tools for AI agents.
 
-## Installation
+## Two Server Modes
+
+| Mode | Use Case | Command |
+|------|----------|---------|
+| **Stdio** | Local development, Claude Desktop | `node index.js` |
+| **HTTP** | Azure Functions, remote agents | `func start` |
+
+## Quick Start
 
 ```bash
-cd mcp-server
 npm install
 ```
 
-## Usage with Claude Desktop
+### Stdio Mode (for Claude Desktop, Copilot CLI)
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
-
-```json
-{
-  "mcpServers": {
-    "rg-cleaner": {
-      "command": "node",
-      "args": ["/absolute/path/to/rg-cleaner/mcp-server/index.js"]
-    }
-  }
-}
-```
-
-Then restart Claude Desktop.
-
-## Usage with Other MCP Clients
-
-Run the server directly:
 ```bash
 node index.js
 ```
 
-The server uses stdio transport and speaks MCP protocol.
+Configure in your agent:
+```json
+{
+  "command": "node",
+  "args": ["/path/to/rg-cleaner/mcp-server/index.js"]
+}
+```
+
+### HTTP Mode (Azure Function)
+
+```bash
+func start
+# Server at http://localhost:7071/api/mcp
+```
+
+Call tools via POST:
+```bash
+# List tools
+curl -X POST http://localhost:7071/api/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method": "tools/list"}'
+
+# Call a tool
+curl -X POST http://localhost:7071/api/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method": "tools/call", "params": {"name": "detect_demo_rgs", "arguments": {}}}'
+```
 
 ## Available Tools
 
@@ -44,23 +58,15 @@ The server uses stdio transport and speaks MCP protocol.
 | `get_exclude_patterns` | Show current exclusion patterns |
 | `detect_demo_rgs` | Find temporary/demo RGs |
 
-## Example Agent Interaction
+## Agent Integration
 
-**User:** "Clean up my demo resource groups"
-
-**Agent workflow:**
-1. `detect_demo_rgs` → finds demo RGs
-2. Shows list to user for confirmation
-3. `delete_resource_groups({names: [...], audit: true})` → dry run
-4. User confirms
-5. `delete_resource_groups({names: [...], audit: false})` → actual deletion
+See the root-level docs for agent-specific instructions:
+- [AGENTS.md](../AGENTS.md) - General agent instructions
+- [CLAUDE.md](../CLAUDE.md) - Claude-specific guidance
+- [.github/mcp/mcp.json](../.github/mcp/mcp.json) - MCP configuration
 
 ## Prerequisites
 
 - Node.js 18+
 - Azure CLI installed and authenticated (`az login`)
-- Active Azure subscription
-
-## Agent Instructions
-
-See [agents.md](./agents.md) for detailed guidance on using these tools effectively.
+- Azure Functions Core Tools (for HTTP mode): `npm i -g azure-functions-core-tools@4`

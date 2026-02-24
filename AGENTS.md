@@ -2,6 +2,27 @@
 
 This document provides instructions for AI agents using the rg-cleaner MCP tools.
 
+## Getting Started
+
+### Load the MCP Server
+
+Connect to the rg-cleaner MCP server using the config in `.github/mcp/mcp.json`:
+
+**Stdio (local):**
+```json
+{ "command": "node", "args": ["mcp-server/index.js"] }
+```
+
+**HTTP (Azure Function):**
+```
+POST http://localhost:7071/api/mcp
+```
+
+### Prerequisites
+
+- Azure CLI installed and authenticated (`az login`)
+- User must have permissions to list/delete resource groups
+
 ## Available Tools
 
 ### `list_resource_groups`
