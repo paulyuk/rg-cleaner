@@ -15,20 +15,7 @@
 # Application Insights defaults
 ^Default-ApplicationInsights
 
-# Personal/permanent resources (customize this section)
-^pyacrgroup$
-^rg-apicenter2$
-^rg-octopets-v2$
-^securePaaSNspRg-global$
-^rg-rss-proxy$
-
-# Managed resource groups (created by Azure services)
-_managed$
-^MC_
-^databricks-rg-
-^synapseworkspace-managedrg-
-^DefaultResourceGroup-
-
-# Security/compliance
-^SecurityInsights
-^AzureBackupRG
+# Add your personal/permanent RGs below
+# Example:
+# ^my-production-rg$
+# ^company-shared-

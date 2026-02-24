@@ -169,6 +169,29 @@ cat exclude-list.txt
 
 ✅ Demo-flagged RGs are just suggestions - review before deleting
 
+## MCP Server (for AI Agents)
+
+This tool also includes an MCP server for use with AI agents like Claude Desktop.
+
+```bash
+cd mcp-server
+npm install
+```
+
+Add to Claude Desktop config:
+```json
+{
+  "mcpServers": {
+    "rg-cleaner": {
+      "command": "node",
+      "args": ["/path/to/rg-cleaner/mcp-server/index.js"]
+    }
+  }
+}
+```
+
+See [mcp-server/README.md](./mcp-server/README.md) for full documentation.
+
 ## License
 
 MIT
