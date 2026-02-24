@@ -2,124 +2,139 @@
 
 This document provides instructions for AI agents using the rg-cleaner MCP tools.
 
-## Getting Started
+## MCP Server Connection
 
-### 1. Start Azurite and the MCP Server
+**Endpoint:** `http://localhost:7071/runtime/webhooks/mcp`
 
+**Config:** `.github/mcp/mcp.json`
+
+Before using tools, ensure the MCP server is running:
 ```bash
-# Terminal 1: Start Azurite (storage emulator)
-azurite --silent --location /tmp/azurite --debug /tmp/azurite/debug.log
+# Terminal 1: Azurite
+azurite --silent --location /tmp/azurite
 
-# Terminal 2: Start the function
-cd mcp-function
-npm install
-func start
+# Terminal 2: Function
+cd mcp-function && func start
 ```
-
-### 2. Connect via MCP
-
-The server runs at `http://localhost:7071/runtime/webhooks/mcp`
-
-See `.github/mcp/mcp.json` for the MCP configuration.
-
-### Prerequisites
-
-- Azure CLI installed and authenticated (`az login`)
-- Azure Functions Core Tools (`npm i -g azure-functions-core-tools@4`)
-- Azurite storage emulator (`npm i -g azurite`)
-- User must have permissions to list/delete resource groups
 
 ## Available Tools
 
-### `list_resource_groups`
-Lists all Azure resource groups with metadata about demo detection and exclusion status.
+| Tool | Description |
+|------|-------------|
+| `list_resource_groups` | List all RGs with demo/exclusion metadata |
+| `delete_resource_groups` | Delete RGs (supports audit mode) |
+| `get_exclude_patterns` | Show protected patterns |
+| `detect_demo_rgs` | Find temporary/demo RGs |
 
-**Use when:**
-- User asks to see their resource groups
-- Before deleting, to show what's available
-- To identify cleanup candidates
+## Common Tasks
+
+### "Show my resource groups"
+```
+→ Call: list_resource_groups({includeExcluded: true})
+→ Display as table: Name | Location | Demo? | Excluded?
+```
+
+### "Find cleanup candidates" / "What can I delete?"
+```
+→ Call: detect_demo_rgs()
+→ Show demo RGs with matched patterns
+→ Recommend deletion with audit first
+```
+
+### "Clean up demo RGs" / "Delete test resources"
+```
+1. Call: detect_demo_rgs() → get names
+2. Show list, ask user to confirm
+3. Call: delete_resource_groups({names: "rg1,rg2,rg3", audit: true})
+4. Show dry-run results
+5. On confirmation: delete_resource_groups({names: "rg1,rg2,rg3", audit: false})
+```
+
+### "Delete specific RGs"
+```
+1. Call: delete_resource_groups({names: "rg-foo,rg-bar", audit: true})
+2. Show what would be deleted
+3. On user confirmation: delete_resource_groups({names: "rg-foo,rg-bar", audit: false})
+```
+
+### "What's protected?" / "Why wasn't X deleted?"
+```
+→ Call: get_exclude_patterns()
+→ Show built-in and custom patterns
+```
+
+## Tool Reference
+
+### `list_resource_groups`
 
 **Parameters:**
-- `includeExcluded` (boolean, default: true): Whether to show excluded RGs
+- `includeExcluded` (boolean, default: true): Include excluded RGs in output
 
-**Response includes:**
-- `total`: Total RG count
-- `excluded`: Count of excluded RGs  
-- `demos`: Count of detected demo/temp RGs
-- `groups[]`: Array with name, location, isDemo, isExcluded
+**Response:**
+```json
+{
+  "total": 52,
+  "excluded": 18,
+  "demos": 12,
+  "groups": [
+    {"name": "rg-demo", "location": "eastus", "isDemo": true, "isExcluded": false},
+    {"name": "NetworkWatcherRG", "location": "westus", "isDemo": false, "isExcluded": true}
+  ]
+}
+```
 
 ### `delete_resource_groups`
-Deletes specified resource groups with safety checks.
-
-**Use when:**
-- User explicitly asks to delete resource groups
-- User confirms deletion after reviewing list
 
 **Parameters:**
-- `names` (string[], required): Array of RG names to delete
-- `audit` (boolean, default: false): If true, simulate without deleting
+- `names` (string, required): Comma-separated RG names (e.g., "rg-demo1,rg-test2")
+- `audit` (boolean, default: false): Dry-run mode
 
-**Safety features:**
-- Automatically skips excluded RGs
-- Staggers deletions to avoid Azure rate limits
-- Returns status for each RG
-
-### `get_exclude_patterns`
-Shows current exclusion patterns protecting RGs from deletion.
-
-**Use when:**
-- User asks what's protected
-- User wants to understand why an RG wasn't deleted
-- Before modifying exclude-list.txt
+**Response:**
+```json
+{
+  "mode": "audit",
+  "results": [
+    {"name": "rg-demo1", "status": "audit", "message": "Would delete: rg-demo1"},
+    {"name": "rg-protected", "status": "skipped", "reason": "excluded by pattern"}
+  ]
+}
+```
 
 ### `detect_demo_rgs`
-Identifies RGs that appear to be temporary based on naming patterns.
 
-**Use when:**
-- User asks to find cleanup candidates
-- User wants to clean up demo/test resources
-- Initial triage of subscription
-
-## Recommended Workflows
-
-### Safe Cleanup Flow
-1. Call `list_resource_groups` to show all RGs
-2. Call `detect_demo_rgs` to identify likely temporary RGs
-3. Present findings to user and ask for confirmation
-4. Call `delete_resource_groups` with `audit: true` first
-5. On user confirmation, call `delete_resource_groups` with `audit: false`
-
-### Quick Demo Cleanup
+**Response:**
+```json
+{
+  "totalGroups": 52,
+  "demoCount": 12,
+  "demoGroups": [
+    {"name": "rg-ignite-demo", "location": "eastus", "matchedPatterns": ["demo", "ignite"]}
+  ]
+}
 ```
-1. detect_demo_rgs → get list of demo RGs
-2. Present list: "Found X demo RGs. Delete them?"
-3. If yes: delete_resource_groups(names, audit=false)
+
+### `get_exclude_patterns`
+
+**Response:**
+```json
+{
+  "builtIn": ["^DefaultResourceGroup", "^NetworkWatcherRG$", "^MC_"],
+  "fromFile": ["^pyacrgroup$", "^rg-production"]
+}
 ```
 
 ## Demo Detection Patterns
 
-The following patterns suggest a temporary/demo RG:
-- Keywords: demo, test, temp, tmp, scratch, playground, sandbox, trial, poc, prototype, experiment
-- Events: ignite, build, msbuild, reinvent, summit, conference, workshop, hackathon
-- Cities: orlando, seattle, vegas, austin, chicago, boston, etc.
+Keywords: `demo`, `test`, `temp`, `tmp`, `scratch`, `playground`, `sandbox`, `trial`, `poc`, `prototype`, `experiment`
 
-## Exclusion Patterns
+Events: `ignite`, `build`, `msbuild`, `reinvent`, `summit`, `conference`, `workshop`, `hackathon`
 
-Built-in exclusions (always protected):
-- `^DefaultResourceGroup` - Azure default RGs
-- `^NetworkWatcherRG$` - Network monitoring
-- `^cloud-shell-storage-` - Cloud Shell
-- `_managed$` - Azure managed RGs
-- `^MC_` - AKS managed clusters
-- `^AzureBackupRG_` - Backup service
-- `^databricks-rg-` - Databricks managed
+Cities: `orlando`, `seattle`, `vegas`, `austin`, `chicago`, `boston`, `london`, `paris`, `tokyo`, `sydney`
 
-Additional patterns loaded from `exclude-list.txt`.
+## Safety Rules
 
-## Safety Guidelines
-
-1. **Always use audit mode first** when unsure
-2. **Never delete without user confirmation** for production-looking RGs
-3. **Check exclusion patterns** before assuming an RG can be deleted
-4. **Warn users** that deletion is permanent and cannot be undone
-5. **Report failures** - some RGs may fail due to locks or dependencies
+1. **Always audit first** - Use `audit: true` before real deletion
+2. **Confirm with user** - Never delete without explicit confirmation
+3. **Respect exclusions** - Excluded RGs are skipped automatically
+4. **Warn about permanence** - Deletion cannot be undone
+5. **Handle failures** - Some RGs may fail due to locks or dependencies
