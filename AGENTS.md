@@ -14,7 +14,7 @@ func start
 
 ### 2. Connect via MCP
 
-The server runs at `http://localhost:7071/runtime/webhooks/mcp/sse`
+The server runs at `http://localhost:7071/runtime/webhooks/mcp`
 
 See `.github/mcp/mcp.json` for the MCP configuration.
 

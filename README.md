@@ -200,7 +200,7 @@ Works with any MCP-compatible agent:
 2. **Start the server:**
    ```bash
    func start
-   # MCP endpoint: http://localhost:7071/runtime/webhooks/mcp/sse
+   # MCP endpoint: http://localhost:7071/runtime/webhooks/mcp
    ```
 
 3. **Connect your agent** using `.github/mcp/mcp.json`
