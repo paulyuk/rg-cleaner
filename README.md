@@ -190,26 +190,26 @@ Works with any MCP-compatible agent:
 
 ### Setup
 
-1. **Install dependencies:**
+1. **Install and build:**
    ```bash
-   cd mcp-server && npm install
+   cd mcp-function
+   npm install
+   npm run build
    ```
 
-2. **Configure your agent** using `.github/mcp/mcp.json`:
-   
-   **Stdio mode** (local development):
-   ```json
-   {
-     "command": "node",
-     "args": ["/path/to/rg-cleaner/mcp-server/index.js"]
-   }
-   ```
-   
-   **HTTP mode** (Azure Function):
+2. **Run locally:**
    ```bash
-   cd mcp-server && func start
-   # Server runs at http://localhost:7071/api/mcp
+   npm start
    ```
+
+3. **Deploy to Azure:**
+   ```bash
+   azd up
+   ```
+
+### MCP Configuration
+
+See `.github/mcp/mcp.json` for agent configuration. After deployment, set `RG_CLEANER_FUNCTION_URL` to your Azure Function endpoint.
 
 ### MCP Tools
 

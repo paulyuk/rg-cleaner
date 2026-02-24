@@ -6,14 +6,15 @@
   "servers": {
     "rg-cleaner-local": {
       "type": "stdio",
-      "command": "node",
-      "args": ["mcp-server/index.js"],
-      "description": "Local stdio server for development"
+      "command": "npm",
+      "args": ["start"],
+      "cwd": "mcp-function",
+      "description": "Local development server (run npm start in mcp-function/)"
     },
-    "rg-cleaner-http": {
-      "type": "http",
-      "url": "${RG_CLEANER_URL:-http://localhost:7071/api/mcp}",
-      "description": "HTTP server (Azure Function or local func host)"
+    "rg-cleaner-azure": {
+      "type": "sse",
+      "url": "${RG_CLEANER_FUNCTION_URL}/runtime/webhooks/mcp/sse",
+      "description": "Azure Functions MCP endpoint (set RG_CLEANER_FUNCTION_URL after azd up)"
     }
   },
   "tools": [

@@ -4,19 +4,23 @@ This document provides instructions for AI agents using the rg-cleaner MCP tools
 
 ## Getting Started
 
-### Load the MCP Server
+### Connect to the MCP Server
 
-Connect to the rg-cleaner MCP server using the config in `.github/mcp/mcp.json`:
-
-**Stdio (local):**
-```json
-{ "command": "node", "args": ["mcp-server/index.js"] }
+**Local development:**
+```bash
+cd mcp-function
+npm install
+npm start
 ```
 
-**HTTP (Azure Function):**
+**Azure deployment:**
+```bash
+cd mcp-function
+azd up
+# Use the MCP endpoint from deployment output
 ```
-POST http://localhost:7071/api/mcp
-```
+
+**MCP Configuration:** See `.github/mcp/mcp.json`
 
 ### Prerequisites
 
