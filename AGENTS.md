@@ -2,6 +2,12 @@
 
 This document provides instructions for AI agents using the rg-cleaner MCP tools.
 
+## Purpose
+
+**Main Use Case:** Clean up non-demo resource groups while protecting demo/event RGs.
+
+Demo RGs (containing keywords like "demo", "ignite", "build") are **kept safe** — they're filtered out so you don't accidentally delete conference demos. The tool helps you identify and remove the clutter (old projects, expired POCs, forgotten test resources) while preserving your important demo environments.
+
 ## MCP Server Connection
 
 **Endpoint:** `http://localhost:7071/runtime/webhooks/mcp`
@@ -24,30 +30,32 @@ cd mcp-function && func start
 | `list_resource_groups` | List all RGs with demo/exclusion metadata |
 | `delete_resource_groups` | Delete RGs (supports audit mode) |
 | `get_exclude_patterns` | Show protected patterns |
-| `detect_demo_rgs` | Find temporary/demo RGs |
+| `detect_demo_rgs` | Find demo RGs (these are PROTECTED, not deleted) |
 
 ## Common Tasks
 
 ### "Show my resource groups"
 ```
 → Call: list_resource_groups({includeExcluded: true})
-→ Display as table: Name | Location | Demo? | Excluded?
+→ Display as table: Name | Location | Demo? | Deletable?
 ```
 
-### "Find cleanup candidates" / "What can I delete?"
+### "What can I clean up?" / "Find cleanup candidates"
 ```
-→ Call: detect_demo_rgs()
-→ Show demo RGs with matched patterns
-→ Recommend deletion with audit first
+→ Call: list_resource_groups({includeExcluded: false})
+→ Filter to show only non-demo, non-excluded RGs
+→ These are safe to delete (demos are already filtered out)
 ```
 
-### "Clean up demo RGs" / "Delete test resources"
+### "Clean up my subscription" / "Delete old RGs"
 ```
-1. Call: detect_demo_rgs() → get names
-2. Show list, ask user to confirm
-3. Call: delete_resource_groups({names: "rg1,rg2,rg3", audit: true})
-4. Show dry-run results
-5. On confirmation: delete_resource_groups({names: "rg1,rg2,rg3", audit: false})
+1. Call: list_resource_groups({includeExcluded: false})
+2. Filter out demo RGs (isDemo: true) — these stay protected
+3. Show remaining RGs as cleanup candidates
+4. Ask user to confirm which ones to delete
+5. Call: delete_resource_groups({names: "rg1,rg2", audit: true})
+6. Show dry-run results
+7. On confirmation: delete_resource_groups({names: "rg1,rg2", audit: false})
 ```
 
 ### "Delete specific RGs"
@@ -57,10 +65,38 @@ cd mcp-function && func start
 3. On user confirmation: delete_resource_groups({names: "rg-foo,rg-bar", audit: false})
 ```
 
+### "Show my demos" / "What demos do I have?"
+```
+→ Call: detect_demo_rgs()
+→ Show demo RGs — these are PROTECTED from deletion
+```
+
 ### "What's protected?" / "Why wasn't X deleted?"
 ```
 → Call: get_exclude_patterns()
 → Show built-in and custom patterns
+```
+
+### "How many RGs do I have?" / "Subscription overview"
+```
+→ Call: list_resource_groups({includeExcluded: true})
+→ Summarize: Total X RGs, Y demos (protected), Z excluded, W deletable
+```
+
+### "Delete everything except demos"
+```
+1. Call: list_resource_groups({includeExcluded: false})
+2. Get all RGs where isDemo: false
+3. Show list, confirm with user
+4. delete_resource_groups({names: "...", audit: true}) → dry-run
+5. delete_resource_groups({names: "...", audit: false}) → execute
+```
+
+### "What's safe to delete in eastus?"
+```
+→ Call: list_resource_groups({includeExcluded: false})
+→ Filter by location === "eastus" AND isDemo === false
+→ Show as cleanup candidates
 ```
 
 ## Tool Reference

@@ -1,6 +1,12 @@
 # Azure Resource Group Cleaner
 
-A fast, smart tool for batch deletion of Azure resource groups with demo detection and safety features.
+A fast, smart tool for batch deletion of Azure resource groups with demo protection and safety features.
+
+## Purpose
+
+**Clean up subscription clutter while keeping your demos safe.**
+
+Demo RGs (containing keywords like "demo", "ignite", "build", "conference") are automatically **protected** — they're flagged so you don't accidentally delete them. The tool helps you identify and remove old projects, expired POCs, and forgotten test resources while preserving your important demo environments.
 
 ## Three Ways to Use
 
@@ -12,12 +18,12 @@ A fast, smart tool for batch deletion of Azure resource groups with demo detecti
 
 ## Features
 
-- 🎯 **Smart Demo Detection** - Auto-detects demo/test/event resource groups
+- 🛡️ **Demo Protection** - Auto-detects and protects demo/event resource groups
 - ⏱️ **Time-based Filtering** - Filter by last week, month, 3 months, or all
 - 🖱️ **Interactive Selection** - Visual multi-select with keyboard navigation
 - ⚡ **Parallel Deletion** - Deletes multiple RGs simultaneously
 - 🔍 **Audit Mode** - Dry-run to preview what would be deleted
-- 🛡️ **Safety Prompts** - Confirmation before destructive actions
+- ✅ **Safety Prompts** - Confirmation before destructive actions
 - 📊 **Resource Counts** - Shows how many resources in each RG
 
 ## Quick Start
@@ -88,15 +94,17 @@ OPTIONS:
 | Enter | Confirm |
 | q | Quit |
 
-## Demo Detection
+## Demo Detection (Protected RGs)
 
-Resource groups are flagged as `[DEMO]` if their name contains:
+Resource groups are flagged as `[DEMO]` and **protected from deletion** if their name contains:
 
 **Keywords:** demo, test, tmp, temp, scratch, playground, sandbox, poc, prototype
 
 **Events:** build, ignite, inspire, ready, summit, conference, hackathon, workshop
 
 **Locations:** seattle, redmond, vegas, orlando, chicago, london, paris, tokyo, sydney, singapore, amsterdam, austin, boston, nyc, sf, la, berlin
+
+These RGs are highlighted in the CLI and protected in MCP tools — review them separately if you want to delete them.
 
 ## Examples
 
@@ -225,17 +233,28 @@ azd up
 | `list_resource_groups` | List RGs with demo/exclusion flags |
 | `delete_resource_groups` | Delete with audit mode support |
 | `get_exclude_patterns` | View protected patterns |
-| `detect_demo_rgs` | Find cleanup candidates |
+| `detect_demo_rgs` | Find demo RGs (these are PROTECTED) |
 
-### Example Agent Conversation
+### Example Agent Conversations
 
-> **You:** "Clean up my demo resource groups"
+**Clean up subscription:**
+> **You:** "Clean up my subscription"
 > 
-> **Agent:** Found 5 demo RGs: rg-ignite-demo, rg-build-test... Delete them?
+> **Agent:** Found 32 deletable RGs (8 demos protected). Delete rg-old-project, rg-expired-poc...?
 > 
-> **You:** "Yes, but keep rg-build-test"
+> **You:** "Yes, delete them all"
 > 
-> **Agent:** Deleted 4 resource groups. rg-build-test preserved.
+> **Agent:** Deleted 32 resource groups. 8 demo RGs preserved.
+
+**See what's protected:**
+> **You:** "Show my demos"
+> 
+> **Agent:** You have 8 demo RGs (protected): rg-ignite-demo, rg-build-2024, rg-seattle-workshop...
+
+**Region cleanup:**
+> **You:** "Clean up eastus region"
+> 
+> **Agent:** Found 12 deletable RGs in eastus (3 demos protected). Proceed?
 
 See [CLAUDE.md](./CLAUDE.md) and [AGENTS.md](./AGENTS.md) for agent-specific instructions.
 
