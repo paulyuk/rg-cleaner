@@ -21,6 +21,7 @@
 ^rg-octopets-v2$
 ^securePaaSNspRg-global$
 ^rg-rss-proxy$
+^rg-languageeastus$
 
 # Managed resource groups (created by Azure services)
 _managed$

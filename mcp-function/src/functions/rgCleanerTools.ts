@@ -8,8 +8,9 @@ const DEMO_PATTERNS = [
   /demo/i, /test/i, /temp/i, /tmp/i, /scratch/i, /playground/i,
   /sandbox/i, /trial/i, /poc/i, /prototype/i, /experiment/i,
   /ignite/i, /build/i, /msbuild/i, /reinvent/i, /summit/i,
-  /conference/i, /workshop/i, /hackathon/i, /meetup/i, /devday/i,
+  /conference/i, /conf/i, /workshop/i, /hackathon/i, /meetup/i, /devday/i,
   /techready/i, /teched/i, /connect/i, /evolve/i, /inspire/i,
+  /offsite/i, /agent/i, /vibe/i,
   /orlando/i, /seattle/i, /vegas/i, /austin/i, /chicago/i,
   /boston/i, /atlanta/i, /denver/i, /portland/i, /sanfrancisco/i,
   /losangeles/i, /newyork/i, /london/i, /paris/i, /berlin/i,
@@ -42,7 +43,8 @@ interface DeleteResult {
 
 function loadExcludePatterns(): RegExp[] {
   const patterns = [...EXCLUDE_PATTERNS];
-  const excludeListPath = process.env.EXCLUDE_LIST_PATH || path.join(__dirname, "..", "..", "exclude-list.txt");
+  // Look in repo root (4 levels up from dist/src/functions/) or use env var
+  const excludeListPath = process.env.EXCLUDE_LIST_PATH || path.join(__dirname, "..", "..", "..", "..", "exclude-list.txt");
   
   if (fs.existsSync(excludeListPath)) {
     const content = fs.readFileSync(excludeListPath, "utf-8");
@@ -188,7 +190,8 @@ export async function getExcludePatternsTool(
   context.log("Getting exclude patterns");
   
   const patterns: string[] = [];
-  const excludeListPath = process.env.EXCLUDE_LIST_PATH || path.join(__dirname, "..", "..", "exclude-list.txt");
+  // Look in repo root (4 levels up from dist/src/functions/) or use env var
+  const excludeListPath = process.env.EXCLUDE_LIST_PATH || path.join(__dirname, "..", "..", "..", "..", "exclude-list.txt");
   
   if (fs.existsSync(excludeListPath)) {
     const content = fs.readFileSync(excludeListPath, "utf-8");
